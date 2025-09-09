@@ -1,0 +1,42 @@
+# Chopsticks configuration for forking Paseo AssetHub
+# This gives us access to real USDC assets and balances
+
+endpoint: wss://paseo-asset-hub-rpc.dwellir.com
+port: 8000
+mock-signature-host: true
+db: ./chopsticks-db.sqlite
+
+# Import storage from AssetHub
+import-storage:
+  System:
+    Account:
+      - - "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" # Alice - for testing
+      - - "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" # Bob - for testing
+
+# Override some storage values for testing
+# This gives our test accounts some native balance
+genesis:
+  runtime: paseo-asset-hub
+  pallets:
+    - pallet: Balances
+      name: Balances
+      storage:
+        - key: "0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9de1e86a9a8c739864cf3cc5ec2bea59fd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
+          # Alice's balance (native token)
+          value: "0x00000000000000000000000000000000000000000000152d02c7e14af6800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        - key: "0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da94f9aea1afa791265fae359272badc1cf8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48"
+          # Bob's balance (native token)
+          value: "0x00000000000000000000000000000000000000000000152d02c7e14af6800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    - pallet: Assets
+      name: Assets
+      storage:
+        # Give Alice some USDC (Asset ID 1337 on Paseo)
+        - key: "0x682a59d51ab9e48a8c8cc418ff9708d2b99d880ec681799c0cf30e8886371da9c69b53e5a08c4e8e2ed1fae0e0734c01b0f8fe7e0d4b42660556de611a3c273ade1e86a9a8c739864cf3cc5ec2bea59fd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d0539050000"
+          value: "0x00e40b5402000000000000000000000000000000000000000000000000000000"
+        # Give Bob some USDC
+        - key: "0x682a59d51ab9e48a8c8cc418ff9708d2b99d880ec681799c0cf30e8886371da9c69b53e5a08c4e8e2ed1fae0e0734c01b0f8fe7e0d4b42660556de611a3c273a4f9aea1afa791265fae359272badc1cf8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a480539050000"
+          value: "0x00e40b5402000000000000000000000000000000000000000000000000000000"
+
+# Allow localhost connections
+allow-unregistered-calls: true
+runtime-log-level: 5

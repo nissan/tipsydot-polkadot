@@ -11,7 +11,10 @@
     "compile": "npx hardhat --config hardhat.config.cjs compile",
     "deploy": "./scripts/deploy.sh",
     "interact": "./scripts/interact.sh",
-    "approve-usdc": "./scripts/approve-usdc.sh"
+    "approve-usdc": "./scripts/approve-usdc.sh",
+    "chopsticks": "./scripts/start-chopsticks.sh",
+    "chopsticks:paseo": "npx @acala-network/chopsticks --config=https://raw.githubusercontent.com/AcalaNetwork/chopsticks/master/configs/paseo-asset-hub.yml",
+    "chopsticks:polkadot": "npx @acala-network/chopsticks --config=https://raw.githubusercontent.com/AcalaNetwork/chopsticks/master/configs/polkadot-asset-hub.yml"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
@@ -20,11 +23,17 @@
     "@polkadot/api": "^16.4.6",
     "@polkadot/api-contract": "^16.4.6",
     "@polkadot/extension-dapp": "^0.61.7",
+    "@polkadot/keyring": "^13.5.6",
     "@polkadot/util-crypto": "^13.5.6",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@reactive-dot/core": "^0.43.1",
     "@reactive-dot/react": "^0.43.1",
+    "@tanstack/react-query": "^5.87.1",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dot-connect": "^0.18.0",
     "framer-motion": "^12.23.12",
@@ -32,10 +41,14 @@
     "polkadot-api": "^1.10.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-joyride": "^2.9.3",
     "recharts": "^3.2.0",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "viem": "^2.37.4",
+    "wagmi": "^2.16.9"
   },
   "devDependencies": {
+    "@acala-network/chopsticks": "^1.2.2",
     "@eslint/js": "^9.22.0",
     "@playwright/test": "^1.55.0",
     "@tailwindcss/vite": "^4.0.14",
@@ -48,6 +61,7 @@
     "ethers": "^6.15.0",
     "globals": "^16.0.0",
     "tailwindcss": "^4.0.14",
+    "tw-animate-css": "^1.3.8",
     "typescript": "~5.8.2",
     "typescript-eslint": "^8.26.1",
     "vite": "^6.2.1"
