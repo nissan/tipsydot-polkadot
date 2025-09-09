@@ -109,9 +109,9 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   return (
     <div className="space-y-6">
       {/* Header with Tabs */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white">
+      <div className="bg-gradient-to-r from-red-600 to-blue-600 rounded-xl p-6 text-white">
         <h2 className="text-3xl font-bold mb-2">TipsyDot Analytics</h2>
-        <p className="text-purple-100">Real-time cross-chain crowdfunding metrics</p>
+        <p className="text-red-100">Real-time cross-chain crowdfunding metrics</p>
         
         <div className="flex gap-2 mt-4">
           {['overview', 'xcm', 'campaigns', 'tips'].map((tab) => (
@@ -121,7 +121,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               className={cn(
                 "px-4 py-2 rounded-lg font-medium transition-all",
                 activeTab === tab
-                  ? "bg-white text-purple-600"
+                  ? "bg-white text-red-600"
                   : "bg-white/20 hover:bg-white/30"
               )}
             >
@@ -152,7 +152,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           value={totalTips.toString()}
           change={15.7}
           icon={<Users className="w-5 h-5 text-white" />}
-          color="bg-gradient-to-r from-purple-500 to-pink-500"
+          color="bg-gradient-to-r from-red-500 to-pink-500"
         />
         <StatCard
           title="Avg Tip Size"
@@ -175,7 +175,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             {/* Pie Chart - Campaign Distribution */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <Box className="w-5 h-5 mr-2 text-purple-600" />
+                <Box className="w-5 h-5 mr-2 text-red-600" />
                 Campaign Distribution
               </h3>
               <ResponsiveContainer width="100%" height={300}>
@@ -287,13 +287,13 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <div className="text-sm text-green-700 mt-2">↓ 3s improvement</div>
               </div>
               
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6">
+              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-purple-600 font-medium">Total Bridged</span>
-                  <Layers className="w-5 h-5 text-purple-600" />
+                  <span className="text-red-600 font-medium">Total Bridged</span>
+                  <Layers className="w-5 h-5 text-red-600" />
                 </div>
-                <div className="text-3xl font-bold text-purple-900">$847k</div>
-                <div className="text-sm text-purple-700 mt-2">Across 1,247 transfers</div>
+                <div className="text-3xl font-bold text-red-900">$847k</div>
+                <div className="text-sm text-red-700 mt-2">Across 1,247 transfers</div>
               </div>
             </div>
           </motion.div>
@@ -350,7 +350,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                     className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
                         {tip.to[0]}
                       </div>
                       <div>
@@ -408,7 +408,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       </AnimatePresence>
 
       {/* Live Activity Feed */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white">
+      <div className="bg-gradient-to-r from-red-600 to-blue-600 rounded-xl p-6 text-white">
         <h3 className="text-lg font-semibold mb-4 flex items-center">
           <Activity className="w-5 h-5 mr-2" />
           Live Network Activity
@@ -424,15 +424,15 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 ${(animatedValue / 1000).toFixed(1)}k
               </motion.span>
             </div>
-            <div className="text-purple-100">24h Volume</div>
+            <div className="text-red-100">24h Volume</div>
           </div>
           <div className="bg-white/20 rounded-lg p-4">
             <div className="text-3xl font-bold">342</div>
-            <div className="text-purple-100">Active Tippers</div>
+            <div className="text-red-100">Active Tippers</div>
           </div>
           <div className="bg-white/20 rounded-lg p-4">
             <div className="text-3xl font-bold">18</div>
-            <div className="text-purple-100">Parachains Supported</div>
+            <div className="text-red-100">Parachains Supported</div>
           </div>
         </div>
       </div>

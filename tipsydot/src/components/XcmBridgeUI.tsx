@@ -8,6 +8,7 @@ import { XcmBridge, CHAIN_CONFIG, formatUSDC, parseUSDC } from '../lib/xcm/XcmBr
 import { connectWallet, getAccounts, getSigner } from '../lib/wallet';
 import { ethers } from 'ethers';
 import { AlertCircle, ArrowRight, Shield, Check, X } from 'lucide-react';
+import { activityTracker } from '../lib/activityTracker';
 
 interface XcmBridgeUIProps {
   onBridgeComplete?: (txHash: string) => void;
@@ -169,6 +170,16 @@ export const XcmBridgeUI: React.FC<XcmBridgeUIProps> = ({
       // Parse amount to base units
       const amountInBaseUnits = parseUSDC(transferAmount);
       
+      // Track activity in the Activity Sheet
+      const activity = activityTracker.trackXcmTransfer({
+        from: selectedAccount,
+        to: evmAddress,
+        amount: transferAmount,
+        asset: 'USDC',
+        destinationChain: 'PassetHub',
+        encoded: '0x...' // This would be the actual encoded XCM message
+      });
+      
       // Execute transfer
       const hash = await xcmBridge.executeReserveTransfer(
         amountInBaseUnits,
@@ -183,12 +194,26 @@ export const XcmBridgeUI: React.FC<XcmBridgeUIProps> = ({
       setTxHash(hash);
       onBridgeComplete?.(hash);
       
+      // Update activity status to success
+      activityTracker.updateActivity(activity.id, {
+        status: 'success',
+        txHash: hash
+      });
+      
       // Reload balance
       await loadBalance(selectedAccount);
       
     } catch (error: any) {
       console.error('Transfer failed:', error);
       setTransferStatus(`❌ Transfer failed: ${error.message}`);
+      
+      // Update activity status to failed
+      if (activity) {
+        activityTracker.updateActivity(activity.id, {
+          status: 'failed',
+          explanation: `Transfer failed: ${error.message}`
+        });
+      }
     } finally {
       setIsTransferring(false);
     }

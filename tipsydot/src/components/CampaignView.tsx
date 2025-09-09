@@ -138,7 +138,7 @@ export default function CampaignView({ campaignId, onRefresh }: CampaignViewProp
           <button
             onClick={handleForward}
             disabled={forwarding}
-            className="mt-4 w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="mt-4 w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {forwarding ? 'Forwarding...' : 'Forward Funds via XCM'}
           </button>

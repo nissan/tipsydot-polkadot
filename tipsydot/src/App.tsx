@@ -1,26 +1,43 @@
 import { useState, useEffect } from 'react';
+import { WagmiProvider } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { wagmiConfig } from './lib/wagmi';
 import { type WalletAccount } from './lib/wallet';
 import WalletBar from './components/WalletBar';
 import CreateCampaign from './components/CreateCampaign';
 import CampaignView from './components/CampaignView';
 import { XcmBridgeUI } from './components/XcmBridgeUI';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
+import LandingPage from './components/landing/LandingPage';
+import { PapiInsights } from './components/PapiInsights';
 import { getApi } from './lib/api';
 import { getNextCampaignId } from './lib/contractCalls';
+import { ThemeToggle } from './components/ThemeToggle';
+import { ActivitySheet, type OnChainActivity } from './components/ActivitySheet';
+import { activityTracker } from './lib/activityTracker';
 import './App.css';
 
+const queryClient = new QueryClient();
+
 function App() {
+  // App state management
+  const [showLanding, setShowLanding] = useState(true);
   const [selectedAccount, setSelectedAccount] = useState<WalletAccount | null>(null);
   const [chainInfo, setChainInfo] = useState<{ name: string; version: string } | null>(null);
   const [apiConnected, setApiConnected] = useState(false);
-  const [activeTab, setActiveTab] = useState<'analytics' | 'bridge' | 'create' | 'view'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'papi' | 'bridge' | 'create' | 'view'>('analytics');
   const [selectedCampaignId, setSelectedCampaignId] = useState(0);
   const [nextCampaignId, setNextCampaignId] = useState(0);
   const [bridgedTxHash, setBridgedTxHash] = useState<string>('');
+  const [activities, setActivities] = useState<OnChainActivity[]>([]);
 
   useEffect(() => {
     connectToChain();
     loadNextCampaignId();
+    
+    // Subscribe to activity updates
+    const unsubscribe = activityTracker.subscribe(setActivities);
+    return unsubscribe;
   }, []);
 
   const connectToChain = async () => {
@@ -56,45 +73,70 @@ function App() {
     setActiveTab('view');
   };
 
+  // Show landing page first, then main app after demo completion or direct navigation
+  if (showLanding) {
+    return (
+      <WagmiProvider config={wagmiConfig}>
+        <QueryClientProvider client={queryClient}>
+          <LandingPage onExitLanding={() => setShowLanding(false)} />
+        </QueryClientProvider>
+      </WagmiProvider>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+    <div className="min-h-screen bg-background">
+      {/* Header with back to landing option */}
+      <div className="bg-card border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <button
+            onClick={() => setShowLanding(true)}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            ← Back to Landing
+          </button>
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-foreground">🍸 TipsyDot</h1>
+            <p className="text-sm text-muted-foreground">Cross-Chain DeFi Platform</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <ActivitySheet activities={activities} />
+            <ThemeToggle />
+          </div>
+        </div>
+      </div>
+
       <WalletBar onAccountSelect={setSelectedAccount} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            🍸 TipsyDot
-          </h1>
-          <p className="text-lg text-gray-600">
-            GoFundMe for Parachain Creators
-          </p>
-        </div>
 
         {/* Connection Status */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Network Status</h2>
+        <div className="bg-card rounded-lg shadow p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4 text-foreground">Network Status</h2>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
-              <span className="text-gray-500">Chain:</span>
-              <p className={`font-medium ${apiConnected ? 'text-green-600' : 'text-red-600'}`}>
+              <span className="text-muted-foreground">Chain:</span>
+              <p className={`font-medium ${apiConnected ? 'text-green-600' : 'text-destructive'}`}>
                 {apiConnected ? '✅ Connected' : '❌ Disconnected'}
               </p>
             </div>
             <div>
-              <span className="text-gray-500">EVM RPC:</span>
+              <span className="text-muted-foreground">EVM RPC:</span>
               <p className="font-medium text-green-600">
                 {import.meta.env.VITE_EVM_RPC?.includes('localhost') ? '✅ Local Anvil' : '✅ Testnet'}
               </p>
             </div>
             <div>
-              <span className="text-gray-500">Contract:</span>
+              <span className="text-muted-foreground">Contract:</span>
               <p className={`font-medium ${import.meta.env.VITE_TIPSY_ADDRESS ? 'text-green-600' : 'text-yellow-600'}`}>
                 {import.meta.env.VITE_TIPSY_ADDRESS ? '✅ Deployed' : '⚠️ Not deployed'}
               </p>
             </div>
             <div>
-              <span className="text-gray-500">Total Campaigns:</span>
+              <span className="text-muted-foreground">Total Campaigns:</span>
               <p className="font-medium">{nextCampaignId}</p>
             </div>
           </div>
@@ -106,18 +148,28 @@ function App() {
             onClick={() => setActiveTab('analytics')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
               activeTab === 'analytics'
-                ? 'bg-purple-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
           >
             📊 Analytics
           </button>
           <button
+            onClick={() => setActiveTab('papi')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+              activeTab === 'papi'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground'
+            }`}
+          >
+            🔗 PAPI Insights
+          </button>
+          <button
             onClick={() => setActiveTab('bridge')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
               activeTab === 'bridge'
-                ? 'bg-green-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
           >
             🌉 Bridge USDC
@@ -126,8 +178,8 @@ function App() {
             onClick={() => setActiveTab('view')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
               activeTab === 'view'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
           >
             View Campaigns
@@ -136,8 +188,8 @@ function App() {
             onClick={() => setActiveTab('create')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
               activeTab === 'create'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
           >
             Create Campaign
@@ -147,6 +199,8 @@ function App() {
         {/* Main Content */}
         {activeTab === 'analytics' ? (
           <AnalyticsDashboard />
+        ) : activeTab === 'papi' ? (
+          <PapiInsights />
         ) : activeTab === 'bridge' ? (
           <div>
             <XcmBridgeUI 
@@ -219,6 +273,8 @@ function App() {
         </div>
       </main>
     </div>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
 

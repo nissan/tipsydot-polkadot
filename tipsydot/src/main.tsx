@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { config } from "./reactive-dot.ts";
 import { ReactiveDotProvider, ChainProvider } from "@reactive-dot/react";
 import { type ChainId } from "@reactive-dot/core";
+import { ThemeProvider } from "./lib/theme.tsx";
 
 import "./index.css";
 import App from "./App.tsx";
@@ -22,8 +23,10 @@ function ChainSelectAppWrapper() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ReactiveDotProvider config={config}>
-      <ChainSelectAppWrapper />
-    </ReactiveDotProvider>
+    <ThemeProvider defaultTheme="dark">
+      <ReactiveDotProvider config={config}>
+        <ChainSelectAppWrapper />
+      </ReactiveDotProvider>
+    </ThemeProvider>
   </StrictMode>,
 );

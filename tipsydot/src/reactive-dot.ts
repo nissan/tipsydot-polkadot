@@ -2,7 +2,7 @@ import { polkadot, paseo, polkadot_asset_hub, paseo_asset_hub } from "@polkadot-
 import { defineConfig } from "@reactive-dot/core";
 import { createLightClientProvider } from "@reactive-dot/core/providers/light-client.js";
 import { InjectedWalletProvider } from "@reactive-dot/core/wallets.js";
-import { LedgerWallet } from "@reactive-dot/wallet-ledger";
+// import { LedgerWallet } from "@reactive-dot/wallet-ledger";
 // import { WalletConnect } from "@reactive-dot/wallet-walletconnect";
 import { registerDotConnect } from "dot-connect";
 
@@ -10,7 +10,7 @@ const lightClientProvider = createLightClientProvider();
 
 const wallets = [
   new InjectedWalletProvider(),
-  new LedgerWallet(),
+  // new LedgerWallet(), // Commented out for hackathon demo - install @reactive-dot/wallet-ledger if needed
   // Uncomment to configure WalletConnect.
   //new WalletConnect({
   //  projectId: "WALLET_CONNECT_PROJECT_ID",

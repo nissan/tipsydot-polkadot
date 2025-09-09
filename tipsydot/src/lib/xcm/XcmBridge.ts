@@ -1,12 +1,27 @@
 /**
  * XCM Bridge Service for AssetHub → PassetHub USDC transfers
- * Based on XCM v5 patterns from the Polkadot ecosystem
+ * 
+ * 🎯 HACKATHON DEMO MODE:
+ * This is a simplified demo implementation that shows XCM concepts
+ * without requiring live blockchain connections. It demonstrates:
+ * - Proper XCM v4 message structure
+ * - Reserve transfer patterns for custom assets
+ * - Security validation and user feedback
+ * - Cross-chain transfer simulation
+ * 
+ * 🚀 PRODUCTION IMPLEMENTATION would include:
+ * - Real @polkadot/api connections to AssetHub and PassetHub
+ * - Actual transaction signing and submission
+ * - Real-time XCM event monitoring
+ * - Proper error handling and recovery
+ * 
+ * Based on XCM v4 patterns from the Polkadot ecosystem
  */
 
-import { ApiPromise, WsProvider } from '@polkadot/api';
-import { Keyring } from '@polkadot/keyring';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
-import type { SubmittableExtrinsic } from '@polkadot/api/types';
+// Mock implementations for demo - full implementation would use @polkadot/api
+// import { ApiPromise, WsProvider } from '@polkadot/api';
+// import { Keyring } from '@polkadot/keyring';
+// import { cryptoWaitReady } from '@polkadot/util-crypto';
 
 // Chain configuration
 export const CHAIN_CONFIG = {
@@ -19,10 +34,26 @@ export const CHAIN_CONFIG = {
     paraId: 1111,
     evmRpc: 'https://rpc.passet-paseo.parity.io',
   },
+  TIPSYDOT_CHAIN: {
+    paraId: 2222,
+  },
+  // ✅ All these use RESERVE TRANSFER (not teleport)
   USDC: {
     assetId: 31337,
     decimals: 6,
     symbol: 'USDC',
+    transferType: 'RESERVE', // Custom asset between parachains
+  },
+  USDP: {
+    assetId: 42069,
+    decimals: 6, 
+    symbol: 'USDP',
+    transferType: 'RESERVE', // Our custom stablecoin
+  },
+  TIPCARD_NFT: {
+    assetId: 69420,
+    symbol: 'TIPCARD',
+    transferType: 'RESERVE', // Our custom NFT collection
   }
 };
 
@@ -38,109 +69,215 @@ interface XcmJunctions {
 }
 
 export class XcmBridge {
-  private assetHubApi: ApiPromise | null = null;
-  private passetHubApi: ApiPromise | null = null;
+  private connected = false;
 
   /**
-   * Initialize connections to both chains
+   * Initialize connections to both chains (Demo mode)
    */
   async connect(): Promise<void> {
-    console.log('🔗 Connecting to AssetHub...');
-    const assetHubProvider = new WsProvider(CHAIN_CONFIG.ASSET_HUB.rpc);
-    this.assetHubApi = await ApiPromise.create({ provider: assetHubProvider });
-    await this.assetHubApi.isReady;
-    console.log('✅ Connected to AssetHub');
+    console.log('🔗 Demo: Simulating connection to AssetHub...');
+    await this.delay(500);
+    console.log('✅ Demo: Connected to AssetHub');
 
-    console.log('🔗 Connecting to PassetHub...');
-    const passetHubProvider = new WsProvider(CHAIN_CONFIG.PASSET_HUB.rpc);
-    this.passetHubApi = await ApiPromise.create({ provider: passetHubProvider });
-    await this.passetHubApi.isReady;
-    console.log('✅ Connected to PassetHub');
+    console.log('🔗 Demo: Simulating connection to PassetHub...');
+    await this.delay(500);
+    console.log('✅ Demo: Connected to PassetHub');
+    
+    this.connected = true;
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
-   * Query USDC balance on AssetHub
+   * Query USDC balance on AssetHub (Demo mode)
    */
   async getAssetHubUSDCBalance(address: string): Promise<string> {
-    if (!this.assetHubApi) throw new Error('Not connected to AssetHub');
+    if (!this.connected) throw new Error('Not connected to AssetHub');
 
-    const assetBalance = await this.assetHubApi.query.assets.account(
-      CHAIN_CONFIG.USDC.assetId,
-      address
-    );
-
-    const balance = assetBalance.toJSON() as any;
-    return balance?.balance || '0';
+    console.log(`📊 Demo: Querying USDC balance for ${address}`);
+    await this.delay(300);
+    
+    // Return mock balance for demo
+    const mockBalance = '500000000'; // 500 USDC (6 decimals)
+    console.log(`💰 Demo: Balance found: ${this.formatUSDC(mockBalance)}`);
+    return mockBalance;
   }
 
   /**
-   * Build XCM reserve transfer from AssetHub to PassetHub
-   * Following the pattern from the gist: https://gist.github.com/franciscoaguirre/a6dea0c55e81faba65bedf700033a1a2
+   * ✅ CORRECT: Build XCM reserve transfer from AssetHub to PassetHub (Demo mode)
+   * Reserve transfer is the proper pattern for custom assets like USDC between parachains
+   * Shows the XCM v4 structure without actual blockchain interaction
    */
   buildReserveTransfer(
     amount: string,
     beneficiaryEvmAddress: string
-  ): SubmittableExtrinsic<'promise'> {
-    if (!this.assetHubApi) throw new Error('Not connected to AssetHub');
+  ): any {
+    if (!this.connected) throw new Error('Not connected to AssetHub');
 
-    // Destination: PassetHub (Parachain 1111)
-    const dest = {
-      V4: {
-        parents: 0,
-        interior: {
-          X1: [{ Parachain: CHAIN_CONFIG.PASSET_HUB.paraId }]
-        }
-      }
-    };
-
-    // Beneficiary: EVM address on PassetHub
-    // AccountKey20 for H160 Ethereum addresses
-    const beneficiary = {
-      V4: {
-        parents: 0,
-        interior: {
-          X1: [{
-            AccountKey20: {
-              key: beneficiaryEvmAddress,
-              network: null
-            }
-          }]
-        }
-      }
-    };
-
-    // Assets: USDC (Asset ID 31337)
-    const assets = {
-      V4: [{
-        id: {
-          Concrete: {
-            parents: 0,
-            interior: {
-              X2: [
-                { PalletInstance: 50 }, // Assets pallet
-                { GeneralIndex: CHAIN_CONFIG.USDC.assetId }
-              ]
-            }
+    // Demo: Show the XCM message structure
+    const xcmMessage = {
+      dest: {
+        V4: {
+          parents: 0,
+          interior: {
+            X1: [{ Parachain: CHAIN_CONFIG.PASSET_HUB.paraId }]
           }
-        },
-        fun: { Fungible: amount }
-      }]
+        }
+      },
+      beneficiary: {
+        V4: {
+          parents: 0,
+          interior: {
+            X1: [{
+              AccountKey20: {
+                key: beneficiaryEvmAddress,
+                network: null
+              }
+            }]
+          }
+        }
+      },
+      assets: {
+        V4: [{
+          id: {
+            Concrete: {
+              parents: 0,
+              interior: {
+                X2: [
+                  { PalletInstance: 50 }, // Assets pallet
+                  { GeneralIndex: CHAIN_CONFIG.USDC.assetId }
+                ]
+              }
+            }
+          },
+          fun: { Fungible: amount }
+        }]
+      },
+      fee_asset_item: 0
     };
 
-    // Build the XCM transaction
-    // Using polkadotXcm.reserveTransferAssets (XCM v4/v5 compatible)
-    const tx = this.assetHubApi.tx.polkadotXcm.reserveTransferAssets(
-      dest,
-      beneficiary,
-      assets,
-      0 // fee_asset_item (0 = first asset pays fees)
-    );
-
-    return tx;
+    console.log('📝 Demo: XCM Reserve Transfer Message Structure:', xcmMessage);
+    return xcmMessage;
   }
 
   /**
-   * Execute reserve transfer with security checks
+   * ✅ CORRECT: Build USDP reserve transfer (our custom stablecoin)
+   * USDP uses reserve transfer like all custom assets between parachains
+   */
+  buildUSDPReserveTransfer(
+    amount: string,
+    beneficiaryEvmAddress: string
+  ): any {
+    if (!this.connected) throw new Error('Not connected to AssetHub');
+
+    // USDP reserve transfer uses same pattern as USDC
+    const xcmMessage = {
+      dest: {
+        V4: {
+          parents: 0,
+          interior: {
+            X1: [{ Parachain: CHAIN_CONFIG.PASSET_HUB.paraId }]
+          }
+        }
+      },
+      beneficiary: {
+        V4: {
+          parents: 0,
+          interior: {
+            X1: [{
+              AccountKey20: {
+                key: beneficiaryEvmAddress,
+                network: null
+              }
+            }]
+          }
+        }
+      },
+      assets: {
+        V4: [{
+          id: {
+            Concrete: {
+              parents: 0,
+              interior: {
+                X2: [
+                  { PalletInstance: 50 }, // Assets pallet
+                  { GeneralIndex: CHAIN_CONFIG.USDP.assetId } // Asset ID 42069
+                ]
+              }
+            }
+          },
+          fun: { Fungible: amount }
+        }]
+      },
+      fee_asset_item: 0
+    };
+
+    console.log('🪙 Demo: USDP Reserve Transfer (Asset ID 42069):', xcmMessage);
+    console.log('✅ Demo: Reserve transfer is correct for custom stablecoins');
+    return xcmMessage;
+  }
+
+  /**
+   * ✅ CORRECT: Build NFT reserve transfer (TipsyDot reward cards)
+   * NFTs always use reserve transfer to maintain provenance
+   */
+  buildNFTReserveTransfer(
+    tokenId: string,
+    beneficiaryEvmAddress: string
+  ): any {
+    if (!this.connected) throw new Error('Not connected to AssetHub');
+
+    // NFT reserve transfer for TipCard collection
+    const xcmMessage = {
+      dest: {
+        V4: {
+          parents: 0,
+          interior: {
+            X1: [{ Parachain: CHAIN_CONFIG.PASSET_HUB.paraId }]
+          }
+        }
+      },
+      beneficiary: {
+        V4: {
+          parents: 0,
+          interior: {
+            X1: [{
+              AccountKey20: {
+                key: beneficiaryEvmAddress,
+                network: null
+              }
+            }]
+          }
+        }
+      },
+      assets: {
+        V4: [{
+          id: {
+            Concrete: {
+              parents: 0,
+              interior: {
+                X2: [
+                  { PalletInstance: 50 }, // Assets pallet  
+                  { GeneralIndex: CHAIN_CONFIG.TIPCARD_NFT.assetId } // Asset ID 69420
+                ]
+              }
+            }
+          },
+          fun: { NonFungible: { Index: tokenId } } // NFT-specific structure
+        }]
+      },
+      fee_asset_item: 0
+    };
+
+    console.log('🎨 Demo: NFT Reserve Transfer (Asset ID 69420):', xcmMessage);
+    console.log('✅ Demo: Reserve transfer maintains NFT provenance across chains');
+    return xcmMessage;
+  }
+
+  /**
+   * Execute reserve transfer with security checks (Demo mode)
    */
   async executeReserveTransfer(
     amount: string,
@@ -159,67 +296,62 @@ export class XcmBridge {
     }
 
     // Security: Show pre-transfer warning
-    onStatusChange('⚠️ Preparing XCM transfer - verify addresses carefully');
+    onStatusChange('⚠️ Demo: Preparing XCM transfer - verify addresses carefully');
 
     // Build the transaction
     const tx = this.buildReserveTransfer(amount, beneficiaryEvmAddress);
 
     // Display transaction details for verification
-    console.log('📋 XCM Transfer Details:');
+    console.log('📋 Demo XCM Transfer Details:');
     console.log(`  From: AssetHub (ParaId ${CHAIN_CONFIG.ASSET_HUB.paraId})`);
     console.log(`  To: PassetHub (ParaId ${CHAIN_CONFIG.PASSET_HUB.paraId})`);
     console.log(`  Beneficiary: ${beneficiaryEvmAddress}`);
     console.log(`  Amount: ${amount} (${parseInt(amount) / 10**CHAIN_CONFIG.USDC.decimals} USDC)`);
 
-    return new Promise((resolve, reject) => {
-      onStatusChange('🔄 Signing transaction...');
-
-      tx.signAndSend(senderAccount, ({ status, events }) => {
-        if (status.isInBlock) {
-          onStatusChange(`📦 Transaction included in block: ${status.asInBlock.toString()}`);
-        }
-
-        if (status.isFinalized) {
-          onStatusChange(`✅ Transaction finalized: ${status.asFinalized.toString()}`);
-          
-          // Check for XCM events
-          events.forEach(({ event }) => {
-            if (event.section === 'xcmPallet' || event.section === 'polkadotXcm') {
-              console.log('XCM Event:', event.method, event.data.toString());
-              
-              if (event.method === 'Attempted') {
-                const outcome = event.data[0].toJSON() as any;
-                if (outcome?.complete) {
-                  onStatusChange('✅ XCM transfer completed successfully!');
-                } else if (outcome?.error) {
-                  onStatusChange(`⚠️ XCM error: ${JSON.stringify(outcome.error)}`);
-                }
-              }
-            }
-          });
-
-          resolve(status.asFinalized.toString());
-        }
-
-        if (status.isDropped || status.isInvalid) {
-          reject(new Error('Transaction failed'));
-        }
-      }).catch(reject);
-    });
+    // Simulate the XCM transfer process
+    onStatusChange('🔄 Demo: Simulating transaction signing...');
+    await this.delay(1000);
+    
+    onStatusChange('📦 Demo: Transaction included in block #12345...');
+    await this.delay(1500);
+    
+    onStatusChange('✅ Demo: Transaction finalized - XCM transfer completed!');
+    await this.delay(500);
+    
+    const mockTxHash = '0x' + Math.random().toString(16).substr(2, 64);
+    console.log('✅ Demo: XCM transfer completed successfully!');
+    console.log('📝 Demo: In production, this would execute real cross-chain transfer');
+    
+    return mockTxHash;
   }
 
   /**
-   * Alternative: Build teleport transfer (if supported between chains)
+   * ❌ INCORRECT: Teleport transfer (not used for our assets)
+   * 
+   * 📚 EDUCATION: When teleport IS used:
+   * ✅ DOT: Relay Chain ↔ AssetHub/BridgeHub  
+   * ✅ KSM: Kusama ↔ System Parachains
+   * ✅ Native tokens moving to/from their "home" relay
+   * 
+   * ❌ NEVER for our assets:
+   * - USDC (Asset ID 31337) - custom asset
+   * - USDP (Asset ID 42069) - our custom stablecoin  
+   * - TipCards (Asset ID 69420) - our NFT collection
    */
   buildTeleportTransfer(
     amount: string,
     beneficiaryEvmAddress: string
-  ): SubmittableExtrinsic<'promise'> | null {
-    if (!this.assetHubApi) throw new Error('Not connected to AssetHub');
+  ): any | null {
+    if (!this.connected) throw new Error('Not connected to chains');
 
-    // Teleport is typically for DOT/KSM between relay and system chains
-    // For USDC between parachains, reserve transfer is standard
-    console.warn('Teleport not typically used for USDC between parachains');
+    console.warn('❌ Demo: Teleport NOT used for any of our assets');
+    console.log('📋 Demo: Our asset transfer patterns:');
+    console.log('  🪙 USDC: Reserve Transfer (custom asset)');
+    console.log('  🪙 USDP: Reserve Transfer (our custom stablecoin)');  
+    console.log('  🎨 TipCards: Reserve Transfer (our NFT collection)');
+    console.log('');
+    console.log('✅ Demo: ALL our assets use RESERVE TRANSFER');
+    console.log('📚 Demo: Teleport reserved for DOT/KSM on system chains only');
     return null;
   }
 
@@ -244,35 +376,39 @@ export class XcmBridge {
   }
 
   /**
-   * Convert Substrate address to EVM (if using same private key)
+   * Convert Substrate address to EVM (Demo mode)
    */
   async deriveEvmAddress(substrateAddress: string): Promise<string> {
-    await cryptoWaitReady();
-    
-    // This is a simplified derivation
-    // In production, use proper key derivation
-    const keyring = new Keyring({ type: 'ethereum' });
+    console.log('📝 Demo: EVM address derivation from Substrate address');
+    console.log(`📍 Demo: Input Substrate address: ${substrateAddress}`);
     
     // Note: This requires the user to have access to their private key
     // which may not always be possible with extension wallets
-    console.warn('EVM derivation from Substrate address requires private key access');
+    console.warn('Demo: EVM derivation from Substrate address requires private key access');
+    console.log('📝 Demo: In production, use proper key derivation with @polkadot/keyring');
     
     // For demo, return a placeholder
-    return '0x' + '0'.repeat(40);
+    const demoEvmAddress = '0x' + Math.random().toString(16).substr(2, 40).padStart(40, '0');
+    console.log(`📍 Demo: Derived EVM address: ${demoEvmAddress}`);
+    return demoEvmAddress;
   }
 
   /**
-   * Disconnect from chains
+   * Helper method to format USDC for display
+   */
+  private formatUSDC(amount: string): string {
+    const value = parseInt(amount) / 10**CHAIN_CONFIG.USDC.decimals;
+    return value.toFixed(2) + ' USDC';
+  }
+
+  /**
+   * Disconnect from chains (Demo mode)
    */
   async disconnect(): Promise<void> {
-    if (this.assetHubApi) {
-      await this.assetHubApi.disconnect();
-      this.assetHubApi = null;
-    }
-    if (this.passetHubApi) {
-      await this.passetHubApi.disconnect();
-      this.passetHubApi = null;
-    }
+    console.log('🔗 Demo: Disconnecting from chains...');
+    await this.delay(200);
+    this.connected = false;
+    console.log('✅ Demo: Disconnected from all chains');
   }
 }
 
@@ -285,9 +421,52 @@ export function formatUSDC(amount: string): string {
 }
 
 /**
+ * Helper function to format USDP amount (our custom stablecoin)
+ */
+export function formatUSDPAmount(amount: string): string {
+  const value = parseInt(amount) / 10**CHAIN_CONFIG.USDP.decimals;
+  return value.toFixed(2) + ' USDP';
+}
+
+/**
  * Helper function to parse USDC amount to base units
  */
 export function parseUSDC(amount: string): string {
   const value = parseFloat(amount) * 10**CHAIN_CONFIG.USDC.decimals;
   return value.toFixed(0);
 }
+
+/**
+ * Helper function to parse USDP amount to base units
+ */
+export function parseUSDPAmount(amount: string): string {
+  const value = parseFloat(amount) * 10**CHAIN_CONFIG.USDP.decimals;
+  return value.toFixed(0);
+}
+
+/**
+ * Summary of TipsyDot XCM Transfer Patterns
+ */
+export const XCM_TRANSFER_SUMMARY = {
+  // ✅ ALL our assets use RESERVE TRANSFER
+  USDC: {
+    assetId: 31337,
+    transferType: 'RESERVE',
+    reason: 'Custom asset between parachains'
+  },
+  USDP: {
+    assetId: 42069, 
+    transferType: 'RESERVE',
+    reason: 'Our custom stablecoin - requires backing'
+  },
+  TIPCARD_NFTS: {
+    assetId: 69420,
+    transferType: 'RESERVE', 
+    reason: 'NFTs need provenance via reserve backing'
+  },
+  // ❌ Never used in our platform
+  TELEPORT: {
+    usage: 'NEVER for our custom assets',
+    correctUse: 'Only DOT/KSM between relay and system chains'
+  }
+};
