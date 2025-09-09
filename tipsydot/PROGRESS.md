@@ -115,22 +115,36 @@
 - ✅ Security-focused tests
 - ✅ Mock USDC for local testing
 
+## ✅ Recent Achievements
+
+### Hour 5: Contract Deployment & Security ✅
+- **Integrated OpenZeppelin** for enhanced security:
+  - Added Ownable, Pausable, ReentrancyGuard
+  - Following smart contract best practices
+- **Successfully deployed TipsyDotV4**:
+  - Contract: 0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6
+  - Registered 4 demo parachains
+  - Setup demo accounts with USDC
+- **Created GitHub repository**:
+  - Public repo for Polkadot Blockchain Academy Cohort 7
+  - https://github.com/nissan/tipsydot-polkadot
+
 ## 🚧 Pending Tasks
 
-1. **PassetHub Contract Deployment**
-   - Deploy enhanced contract with parachain registry
-   - Implement campaign sovereign account mapping
-   - Test with bridged USDC
+1. **Setup Proper USDC Integration**
+   - Use AssetHub USDC precompile instead of mock
+   - Configure proper bridged asset addresses
+   - Setup Omninode with Revive pallet
 
-2. **End-to-End XCM Testing**
+2. **Substrate Runtime Setup**
+   - Deploy Omninode for local testing
+   - Configure Revive pallet for EVM compatibility
+   - Test XCM with actual runtime
+
+3. **End-to-End XCM Testing**
    - Test actual bridge from AssetHub to PassetHub
    - Verify USDC arrives at correct address
    - Confirm tip transactions work
-
-3. **Demo Preparation**
-   - Pre-fund demo accounts
-   - Create example campaigns
-   - Prepare backup local demo
 
 ## 📊 Key Metrics
 
