@@ -1,0 +1,50 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e6]:
+    - generic [ref=e10]: Chain Disconnected
+    - button "Connect Wallet" [ref=e12] [cursor=pointer]
+  - main [ref=e13]:
+    - generic [ref=e14]:
+      - heading "🍸 TipsyDot" [level=1] [ref=e15]
+      - paragraph [ref=e16]: GoFundMe for Parachain Creators
+    - generic [ref=e17]:
+      - heading "Network Status" [level=2] [ref=e18]
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - generic [ref=e21]: "Chain:"
+          - paragraph [ref=e22]: ❌ Disconnected
+        - generic [ref=e23]:
+          - generic [ref=e24]: "EVM RPC:"
+          - paragraph [ref=e25]: ✅ Local Anvil
+        - generic [ref=e26]:
+          - generic [ref=e27]: "Contract:"
+          - paragraph [ref=e28]: ✅ Deployed
+        - generic [ref=e29]:
+          - generic [ref=e30]: "Total Campaigns:"
+          - paragraph [ref=e31]: "1"
+    - generic [ref=e32]:
+      - button "View Campaigns" [ref=e33] [cursor=pointer]
+      - button "Create Campaign" [active] [ref=e34] [cursor=pointer]
+    - generic [ref=e35]:
+      - heading "Create Campaign" [level=2] [ref=e36]
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - generic [ref=e39]: Campaign Name
+          - textbox "Save the Ocean" [ref=e40]
+        - generic [ref=e41]:
+          - generic [ref=e42]: Description
+          - textbox "Help us clean the oceans and protect marine life..." [ref=e43]
+        - generic [ref=e44]:
+          - generic [ref=e45]: Destination ParaID
+          - spinbutton [ref=e46]: "2000"
+        - generic [ref=e47]:
+          - generic [ref=e48]: Beneficiary (Hex)
+          - textbox "0x..." [ref=e49]: "0x01000000000000000000000000000000000000000000000000000000"
+        - generic [ref=e50]:
+          - generic [ref=e51]: Asset (USDC Address)
+          - textbox "0x..." [ref=e52]: "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+        - button "Create Campaign" [ref=e53] [cursor=pointer]
+    - group [ref=e55]
+```

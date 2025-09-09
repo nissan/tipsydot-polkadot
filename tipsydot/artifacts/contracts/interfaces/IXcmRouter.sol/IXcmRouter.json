@@ -1,0 +1,85 @@
+{
+  "_format": "hh3-artifact-1",
+  "contractName": "IXcmRouter",
+  "sourceName": "contracts/interfaces/IXcmRouter.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "asset",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "beneficiary",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint32",
+          "name": "destParaId",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint64",
+          "name": "weight",
+          "type": "uint64"
+        }
+      ],
+      "name": "transferAssets",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "asset",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "beneficiary",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint32",
+          "name": "destParaId",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint64",
+          "name": "weight",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes",
+          "name": "memo",
+          "type": "bytes"
+        }
+      ],
+      "name": "transferAssetsWithMemo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/interfaces/IXcmRouter.sol",
+  "buildInfoId": "solc-0_8_20-4450347bc3500c408bf7d63b23f6763560f88769"
+}

@@ -1,0 +1,68 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e6]:
+    - generic [ref=e10]: Chain Disconnected
+    - button "Connect Wallet" [ref=e12] [cursor=pointer]
+  - main [ref=e13]:
+    - generic [ref=e14]:
+      - heading "🍸 TipsyDot" [level=1] [ref=e15]
+      - paragraph [ref=e16]: GoFundMe for Parachain Creators
+    - generic [ref=e17]:
+      - heading "Network Status" [level=2] [ref=e18]
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - generic [ref=e21]: "Chain:"
+          - paragraph [ref=e22]: ❌ Disconnected
+        - generic [ref=e23]:
+          - generic [ref=e24]: "EVM RPC:"
+          - paragraph [ref=e25]: ✅ Local Anvil
+        - generic [ref=e26]:
+          - generic [ref=e27]: "Contract:"
+          - paragraph [ref=e28]: ✅ Deployed
+        - generic [ref=e29]:
+          - generic [ref=e30]: "Total Campaigns:"
+          - paragraph [ref=e31]: "1"
+    - generic [ref=e32]:
+      - button "View Campaigns" [ref=e33] [cursor=pointer]
+      - button "Create Campaign" [ref=e34] [cursor=pointer]
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: "Select Campaign ID:"
+        - generic [ref=e38]:
+          - spinbutton [ref=e39]: "0"
+          - generic [ref=e40]: (0 - 0)
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - heading "Save the Ocean" [level=2] [ref=e44]
+            - paragraph [ref=e45]: Help us clean the oceans
+          - generic [ref=e46]:
+            - generic [ref=e47]:
+              - generic [ref=e48]: "Creator:"
+              - paragraph [ref=e49]: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+            - generic [ref=e50]:
+              - generic [ref=e51]: "Destination ParaID:"
+              - paragraph [ref=e52]: "2000"
+            - generic [ref=e53]:
+              - generic [ref=e54]: "Total Raised:"
+              - paragraph [ref=e55]: $0.00 USDC
+            - generic [ref=e56]:
+              - generic [ref=e57]: "Status:"
+              - paragraph [ref=e58]: Collecting
+        - generic [ref=e59]:
+          - 'heading "Tip Campaign #0" [level=3] [ref=e60]'
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - generic [ref=e63]: Amount (USDC)
+              - spinbutton [ref=e64]
+            - generic [ref=e65]:
+              - generic [ref=e66]: Memo (optional)
+              - textbox "Great cause! 🎉" [ref=e67]
+            - generic [ref=e68]:
+              - paragraph [ref=e69]: First, approve USDC spending for this amount
+              - button "Approve USDC" [disabled] [ref=e70] [cursor=pointer]
+            - button "Send 0 USDC" [disabled] [ref=e71] [cursor=pointer]
+    - group [ref=e73]
+```

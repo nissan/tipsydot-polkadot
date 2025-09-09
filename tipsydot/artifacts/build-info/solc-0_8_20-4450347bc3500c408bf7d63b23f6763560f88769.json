@@ -1,0 +1,43 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_20-4450347bc3500c408bf7d63b23f6763560f88769",
+  "solcVersion": "0.8.20",
+  "solcLongVersion": "0.8.20+commit.a1b79de6",
+  "userSourceNameMap": {
+    "contracts/TipsyDot.sol": "project/contracts/TipsyDot.sol",
+    "contracts/interfaces/IERC20.sol": "project/contracts/interfaces/IERC20.sol",
+    "contracts/interfaces/IXcmRouter.sol": "project/contracts/interfaces/IXcmRouter.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "shanghai",
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/interfaces/IERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ninterface IERC20 {\n    function totalSupply() external view returns (uint256);\n    function balanceOf(address account) external view returns (uint256);\n    function transfer(address recipient, uint256 amount) external returns (bool);\n    function allowance(address owner, address spender) external view returns (uint256);\n    function approve(address spender, uint256 amount) external returns (bool);\n    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);\n    \n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(address indexed owner, address indexed spender, uint256 value);\n}"
+      },
+      "project/contracts/interfaces/IXcmRouter.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ninterface IXcmRouter {\n    function transferAssets(\n        address asset,\n        uint256 amount,\n        bytes calldata beneficiary,\n        uint32 destParaId,\n        uint64 weight\n    ) external;\n    \n    function transferAssetsWithMemo(\n        address asset,\n        uint256 amount,\n        bytes calldata beneficiary,\n        uint32 destParaId,\n        uint64 weight,\n        bytes calldata memo\n    ) external;\n}"
+      },
+      "project/contracts/TipsyDot.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\nimport \"./interfaces/IERC20.sol\";\nimport \"./interfaces/IXcmRouter.sol\";\n\ncontract TipsyDot {\n    struct Campaign {\n        string name;\n        string description;\n        address creator;\n        address asset;\n        bytes beneficiary;\n        uint32 destParaId;\n        uint256 totalRaised;\n        bool forwarded;\n        uint256 createdAt;\n    }\n    \n    mapping(uint256 => Campaign) public campaigns;\n    mapping(uint256 => string[]) public campaignMemos;\n    uint256 public nextCampaignId;\n    \n    address public xcmRouter;\n    address public owner;\n    \n    event CampaignCreated(\n        uint256 indexed campaignId,\n        string name,\n        address indexed creator,\n        address asset,\n        uint32 destParaId\n    );\n    \n    event Tipped(\n        uint256 indexed campaignId,\n        address indexed tipper,\n        uint256 amount,\n        string memo\n    );\n    \n    event Forwarded(\n        uint256 indexed campaignId,\n        uint256 amount,\n        uint32 destParaId\n    );\n    \n    event XcmRouterSet(address indexed newRouter);\n    \n    modifier onlyOwner() {\n        require(msg.sender == owner, \"Only owner\");\n        _;\n    }\n    \n    constructor() {\n        owner = msg.sender;\n    }\n    \n    function createCampaign(\n        string memory _name,\n        string memory _description,\n        address _asset,\n        bytes memory _beneficiary,\n        uint32 _destParaId\n    ) external returns (uint256) {\n        require(bytes(_name).length > 0, \"Name required\");\n        require(_asset != address(0), \"Invalid asset\");\n        require(_destParaId > 0, \"Invalid parachain ID\");\n        require(_beneficiary.length > 0, \"Beneficiary required\");\n        \n        uint256 campaignId = nextCampaignId++;\n        \n        campaigns[campaignId] = Campaign({\n            name: _name,\n            description: _description,\n            creator: msg.sender,\n            asset: _asset,\n            beneficiary: _beneficiary,\n            destParaId: _destParaId,\n            totalRaised: 0,\n            forwarded: false,\n            createdAt: block.timestamp\n        });\n        \n        emit CampaignCreated(campaignId, _name, msg.sender, _asset, _destParaId);\n        \n        return campaignId;\n    }\n    \n    function tip(uint256 _campaignId, uint256 _amount, string memory _memo) public {\n        Campaign storage campaign = campaigns[_campaignId];\n        require(campaign.createdAt > 0, \"Campaign not found\");\n        require(!campaign.forwarded, \"Already forwarded\");\n        require(_amount > 0, \"Amount must be > 0\");\n        \n        IERC20 token = IERC20(campaign.asset);\n        require(\n            token.transferFrom(msg.sender, address(this), _amount),\n            \"Transfer failed\"\n        );\n        \n        campaign.totalRaised += _amount;\n        \n        if (bytes(_memo).length > 0) {\n            campaignMemos[_campaignId].push(_memo);\n        }\n        \n        emit Tipped(_campaignId, msg.sender, _amount, _memo);\n    }\n    \n    function forward(uint256 _campaignId) public {\n        Campaign storage campaign = campaigns[_campaignId];\n        require(campaign.createdAt > 0, \"Campaign not found\");\n        require(!campaign.forwarded, \"Already forwarded\");\n        require(campaign.totalRaised > 0, \"Nothing to forward\");\n        require(xcmRouter != address(0), \"XCM router not set\");\n        \n        campaign.forwarded = true;\n        \n        IERC20 token = IERC20(campaign.asset);\n        token.approve(xcmRouter, campaign.totalRaised);\n        \n        IXcmRouter(xcmRouter).transferAssets(\n            campaign.asset,\n            campaign.totalRaised,\n            campaign.beneficiary,\n            campaign.destParaId,\n            5000000000\n        );\n        \n        emit Forwarded(_campaignId, campaign.totalRaised, campaign.destParaId);\n    }\n    \n    function tipAndForward(\n        uint256 _campaignId,\n        uint256 _amount,\n        string memory _memo\n    ) external {\n        tip(_campaignId, _amount, _memo);\n        forward(_campaignId);\n    }\n    \n    function setXcmRouter(address _xcmRouter) external onlyOwner {\n        require(_xcmRouter != address(0), \"Invalid router\");\n        xcmRouter = _xcmRouter;\n        emit XcmRouterSet(_xcmRouter);\n    }\n    \n    function getCampaignMemos(uint256 _campaignId) external view returns (string[] memory) {\n        return campaignMemos[_campaignId];\n    }\n    \n    function getCampaignDetails(uint256 _campaignId) external view returns (\n        string memory name,\n        string memory description,\n        address creator,\n        address asset,\n        bytes memory beneficiary,\n        uint32 destParaId,\n        uint256 totalRaised,\n        bool forwarded,\n        uint256 createdAt\n    ) {\n        Campaign memory c = campaigns[_campaignId];\n        return (\n            c.name,\n            c.description,\n            c.creator,\n            c.asset,\n            c.beneficiary,\n            c.destParaId,\n            c.totalRaised,\n            c.forwarded,\n            c.createdAt\n        );\n    }\n}"
+      }
+    }
+  }
+}
