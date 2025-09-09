@@ -1,0 +1,58 @@
+# Chopsticks configuration for forking Paseo relay chain
+# For PBA Cohort 7 - XCM Demo
+
+endpoint: wss://paseo-rpc.dwellir.com
+mock-signature-host: true
+db: ./chopsticks-relay-db.sqlite
+
+# Fork from a recent block
+block: 5000000
+
+# Port configuration
+port: 9944
+ws-port: 9944
+
+# Import test accounts with balance
+import-storage:
+  System:
+    Account:
+      - [
+          "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+          { data: { free: "1000000000000000" } },
+        ] # Alice
+      - [
+          "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+          { data: { free: "1000000000000000" } },
+        ] # Bob
+
+# Enable HRMP channels
+Hrmp:
+  HrmpChannels:
+    # Open channel from OmniNode (2000) to AssetHub (1000)
+    - [
+        [2000, 1000],
+        {
+          max_capacity: 1000,
+          max_total_size: 102400,
+          max_message_size: 102400,
+          msg_count: 0,
+          total_size: 0,
+          mqc_head: null,
+          sender_deposit: 0,
+          recipient_deposit: 0,
+        },
+      ]
+    # Open channel from AssetHub (1000) to OmniNode (2000)
+    - [
+        [1000, 2000],
+        {
+          max_capacity: 1000,
+          max_total_size: 102400,
+          max_message_size: 102400,
+          msg_count: 0,
+          total_size: 0,
+          mqc_head: null,
+          sender_deposit: 0,
+          recipient_deposit: 0,
+        },
+      ]

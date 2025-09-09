@@ -1,0 +1,32 @@
+[settings]
+timeout = 1000
+
+[relaychain]
+chain = "rococo-local"
+
+[[relaychain.nodes]]
+name = "alice"
+validator = true
+
+[[relaychain.nodes]]
+name = "bob"
+validator = true
+
+[[parachains]]
+id = 2000
+chain = "revive-local"
+cumulus_based = true
+
+[[parachains.collators]]
+name = "collator-2000"
+command = "./bin/polkadot-omni-node"
+args = ["--chain", "./specs/revive-local.json"]
+
+[[parachains]]
+id = 1000
+cumulus_based = true
+
+[[parachains.collators]]
+name = "asset-hub"
+command = "npx"
+args = ["@acala-network/chopsticks", "--config", "chopsticks-assethub.yml", "--port", "8000"]

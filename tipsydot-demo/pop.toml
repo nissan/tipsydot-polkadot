@@ -1,0 +1,73 @@
+# Pop CLI Configuration for TipsyDot
+# PBA Cohort 7 - XCM Demo
+
+[project]
+name = "tipsydot-demo"
+description = "Cross-chain USDC donations via XCM for PBA Cohort 7"
+version = "0.1.0"
+
+[parachain]
+# OmniNode with Revive configuration
+runtime = "revive"
+parachain_id = 2000
+relay_chain = "rococo-local"
+
+[contracts]
+# Solidity contracts for Revive
+type = "solidity"
+contracts_dir = "./contracts"
+artifacts_dir = "./artifacts"
+
+# Contract addresses (will be populated after deployment)
+[contracts.deployed]
+SecureXCMDonation = ""
+MockUSDC = ""
+
+[xcm]
+# XCM channel configuration
+[[xcm.channels]]
+from = 2000  # Our parachain
+to = 1000    # AssetHub
+max_capacity = 1000
+max_message_size = 102400
+
+[[xcm.channels]]
+from = 1000  # AssetHub
+to = 2000    # Our parachain
+max_capacity = 1000
+max_message_size = 102400
+
+[assets]
+# USDC configuration
+[[assets.tokens]]
+name = "USDC"
+symbol = "USDC"
+decimals = 6
+asset_id = 1337
+location = { parents = 1, interior = { X2 = [{ Parachain = 1000 }, { GeneralIndex = 1337 }] } }
+
+[networks]
+# Local development
+[networks.local]
+parachain_endpoint = "ws://localhost:9945"
+relay_endpoint = "ws://localhost:9944"
+assethub_endpoint = "ws://localhost:8000"
+
+# Testnet (Paseo)
+[networks.testnet]
+parachain_endpoint = "wss://moonriver-alpha.api.onfinality.io/public-ws"
+relay_endpoint = "wss://paseo-rpc.dwellir.com"
+assethub_endpoint = "wss://paseo-asset-hub-rpc.dwellir.com"
+
+# Production (Polkadot)
+[networks.production]
+parachain_endpoint = "wss://wss.api.moonbeam.network"
+relay_endpoint = "wss://rpc.polkadot.io"
+assethub_endpoint = "wss://polkadot-asset-hub-rpc.dwellir.com"
+
+[scripts]
+# Useful scripts
+build = "pop build --release"
+deploy = "pop up contract --network local"
+test = "pop test"
+clean = "rm -rf target artifacts"

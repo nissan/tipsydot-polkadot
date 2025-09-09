@@ -1,0 +1,3 @@
+onlyBuiltDependencies:
+  - secp256k1
+  - sqlite3

@@ -1,0 +1,54 @@
+[settings]
+timeout = 1000
+provider = "native"
+
+[relaychain]
+chain = "paseo-local"
+default_command = "./bin/polkadot"
+
+[[relaychain.nodes]]
+name = "alice"
+validator = true
+
+[[relaychain.nodes]]
+name = "bob"
+validator = true
+
+# Paseo AssetHub - Forked with Chopsticks (has USDC Asset ID 1337)
+[[parachains]]
+id = 1000
+chain = "asset-hub-paseo"
+cumulus_based = false
+
+[[parachains.collators]]
+name = "asset-hub"
+command = "npx"
+args = ["@acala-network/chopsticks", "--config", "chopsticks-assethub.yml", "--port", "8000"]
+
+# PassetHub - With Revive Pallet for EVM
+[[parachains]]
+id = 1111
+chain = "passethub-local"
+cumulus_based = true
+
+[[parachains.collators]]
+name = "passethub-collator"
+command = "./bin/polkadot-omni-node"
+args = [
+  "--chain", "./specs/passethub-local.json",
+  "--enable-eth-rpc",
+  "--eth-rpc-port", "8545"
+]
+
+# HRMP channels configuration
+[[hrmp_channels]]
+sender = 1000
+recipient = 1111
+max_capacity = 1000
+max_message_size = 102400
+
+[[hrmp_channels]]
+sender = 1111
+recipient = 1000
+max_capacity = 1000
+max_message_size = 102400

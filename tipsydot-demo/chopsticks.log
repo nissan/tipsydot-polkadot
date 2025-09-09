@@ -1,0 +1,5 @@
+Error: Bad argv
+    at processArgv (/Users/nissan/code/pba-hackathon/tipsydot-demo/node_modules/.pnpm/@acala-network+chopsticks@1.2.2_bufferutil@4.0.9_ts-node@10.9.2_@types+node@20.11.28_ty_a21d36f7de40052c8e616def74ec43da/node_modules/@acala-network/chopsticks/dist/cjs/cli.js:33:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  [cause]: {}
+}

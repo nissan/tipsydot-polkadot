@@ -1,0 +1,37 @@
+# Chopsticks configuration for forking Paseo AssetHub
+# This gives us access to real USDC assets (Asset ID 1337)
+
+endpoint: wss://paseo-asset-hub-rpc.dwellir.com
+port: 8000
+mock-signature-host: true
+db: ./chopsticks-db.sqlite
+
+# Allow connections and unlimited gas
+runtime-log-level: 5
+allow-unregistered-calls: true
+
+# Import storage for test accounts
+import-storage:
+  System:
+    Account:
+      - - "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" # Alice
+      - - "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" # Bob
+      - - "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y" # Charlie
+
+# Override storage to fund accounts
+genesis:
+  runtime: paseo-asset-hub
+  pallets:
+    # Native token balances
+    - pallet: Balances
+      name: Balances
+      storage:
+        # Alice: 1000 tokens
+        - key: "0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9de1e86a9a8c739864cf3cc5ec2bea59fd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
+          value: "0x00000000000000000000000000000000000000000000d3c21bcecceda1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        # Bob: 1000 tokens
+        - key: "0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da94f9aea1afa791265fae359272badc1cf8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48"
+          value: "0x00000000000000000000000000000000000000000000d3c21bcecceda1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        # Charlie: 1000 tokens
+        - key: "0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da990b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe22e5c0b3a70cb30a5da45cd1419788cc79"
+          value: "0x00000000000000000000000000000000000000000000d3c21bcecceda1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"

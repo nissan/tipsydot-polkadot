@@ -1,0 +1,1 @@
+./scripts/start-passethub.sh: line 35: ./bin/polkadot-omni-node: cannot execute binary file

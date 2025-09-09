@@ -1,0 +1,69 @@
+# Chopsticks configuration for Paseo AssetHub fork
+# This gives us access to real USDC (Asset ID: 1337)
+
+endpoint: wss://paseo-asset-hub-rpc.dwellir.com
+port: 8000
+mock-signature-host: true
+db: ./chopsticks-db
+
+# Pre-fund test accounts
+genesis-state:
+  - key: '0x99971b5749ac43e0235e41b0d378691857c875e4cff74148e4628f264b974c80'  # Balances.TotalIssuance
+    value: '0x00000000000000001000000000000000'
+  
+  # Fund Alice with native tokens
+  - key: '0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9de1e86a9a8c739864cf3cc5ec2bea59fd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d'
+    value: '0x00000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080'
+  
+  # Fund Bob with native tokens
+  - key: '0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da98eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48'
+    value: '0x00000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080'
+  
+  # Fund Charlie with native tokens
+  - key: '0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da990b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe22'
+    value: '0x00000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080'
+
+# Also fund EVM addresses (for bridging)
+  # Fund Anvil Account #0
+  - key: '0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9f39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+    value: '0x00000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080'
+  
+  # Fund Anvil Account #1
+  - key: '0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da970997970C51812dc3A010C7d01b50e0d17dc79C8'
+    value: '0x00000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080'
+
+# USDC Asset configuration (Asset ID: 1337 on Paseo)
+# This is already present on Paseo AssetHub, we just need to mint some to our accounts
+state-overrides:
+  - pallet: Assets
+    storage: Account
+    key:
+      - 1337  # USDC Asset ID on Paseo
+      - '0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d'  # Alice
+    value:
+      balance: 1000000000000  # 1M USDC (6 decimals)
+      status: Liquid
+      reason: Consumer
+      extra: null
+  
+  - pallet: Assets
+    storage: Account
+    key:
+      - 1337
+      - '0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48'  # Bob
+    value:
+      balance: 1000000000000
+      status: Liquid
+      reason: Consumer
+      extra: null
+  
+  - pallet: Assets
+    storage: Account
+    key:
+      - 1337
+      - '0x90b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe22'  # Charlie
+    value:
+      balance: 1000000000000
+      status: Liquid
+      reason: Consumer
+      extra: null
