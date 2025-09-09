@@ -210,7 +210,7 @@ contract TipsyDotNFT is ERC721, ERC721Enumerable, Ownable {
             
             // Center emblem/logo area
             '<circle cx="175" cy="150" r="60" fill="none" stroke="', rarityColors[card.rarity], '" stroke-width="2" opacity="0.5"/>',
-            '<text x="175" y="140" text-anchor="middle" fill="white" font-size="48">🍸</text>',
+            '<text x="175" y="140" text-anchor="middle" fill="white" font-size="48">TIPSY</text>',
             '<text x="175" y="170" text-anchor="middle" fill="white" font-size="14">', parachainName, '</text>',
             
             // Stats
