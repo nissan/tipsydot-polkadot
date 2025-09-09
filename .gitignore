@@ -1,0 +1,54 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# Large external dependencies
+polkadot-sdk/
+dillionverma-startup-template-*/
+
+# Symlinks
+pba-content
+
+# Build directories in demo folders
+tipsydot-demo/passethub-native/
+tipsydot-demo/pop-cli/
+
+# Runtime builds
+tipsydot/runtime/
+
+# Logs
+*.log
+tipsydot-demo/anvil.log
+tipsydot-demo/chopsticks.log
+tipsydot-demo/omninode.log
+
+# Node modules (if not already ignored)
+node_modules/
+.pnpm-debug.log*
+
+# Build outputs
+target/
+build/
+dist/
+out/
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env.local
+.env.*.local
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
