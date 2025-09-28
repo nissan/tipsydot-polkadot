@@ -1,0 +1,32 @@
+[package]
+name = "tipping_v6"
+version = "1.0.0"
+authors = ["TipsyDot Team"]
+edition = "2021"
+
+[dependencies]
+ink = { workspace = true }
+scale = { workspace = true }
+scale-info = { workspace = true }
+
+# For EVM compatibility
+ink_primitives = { version = "6.0.0-alpha", default-features = false }
+hex-literal = "0.4"
+
+[dev-dependencies]
+ink_e2e = { version = "6.0.0-alpha" }
+
+[lib]
+path = "lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "ink/std",
+    "scale/std",
+    "scale-info/std",
+    "ink_primitives/std",
+]
+ink-as-dependency = []
+e2e-tests = []
+abi-gen = ["ink/std"]

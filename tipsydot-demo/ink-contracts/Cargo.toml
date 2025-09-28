@@ -5,12 +5,13 @@ members = [
     "cross_chain",
     "simple_test",
     "tipping_compatible",
+    "tipping_v6",
 ]
 resolver = "2"
 
 [workspace.dependencies]
-# Ink! v5 - stable version with Solidity compatibility features
-ink = { version = "5.0", default-features = false }
+# Ink! v6 - alpha version with full pallet-revive EVM compatibility
+ink = { version = "6.0.0-alpha", default-features = false }
 scale = { package = "parity-scale-codec", version = "3.6", default-features = false, features = ["derive"] }
 scale-info = { version = "2.11", default-features = false, features = ["derive"] }
 
