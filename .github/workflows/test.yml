@@ -1,0 +1,247 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  ink-contracts:
+    name: Ink! Contract Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      
+      - name: Install cargo-contract
+        run: |
+          cargo install cargo-contract --version 4.1.1
+      
+      - name: Check Ink! contracts
+        working-directory: tipsydot-demo/ink-contracts
+        run: |
+          cargo fmt --check
+          cargo clippy -- -D warnings
+          cargo check --all-targets
+      
+      - name: Run Ink! tests
+        working-directory: tipsydot-demo/ink-contracts
+        run: |
+          cargo test --workspace
+      
+      - name: Build contracts
+        working-directory: tipsydot-demo/ink-contracts
+        run: |
+          cargo contract build --release --manifest-path simple_test/Cargo.toml
+          cargo contract build --release --manifest-path tipping_v6/Cargo.toml
+
+  solidity-contracts:
+    name: Solidity Contract Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      
+      - name: Install dependencies
+        working-directory: tipsydot-demo
+        run: forge install
+      
+      - name: Run Solidity tests
+        working-directory: tipsydot-demo
+        run: |
+          forge test -vvv
+          forge coverage
+      
+      - name: Check contract sizes
+        working-directory: tipsydot-demo
+        run: forge build --sizes
+
+  frontend-unit:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+      
+      - name: Install dependencies
+        working-directory: tipsydot-demo
+        run: pnpm install --frozen-lockfile
+      
+      - name: Type check
+        working-directory: tipsydot-demo
+        run: pnpm tsc --noEmit
+      
+      - name: Lint
+        working-directory: tipsydot-demo
+        run: pnpm lint
+      
+      - name: Run unit tests
+        working-directory: tipsydot-demo
+        run: pnpm test:unit --coverage
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./tipsydot-demo/coverage/coverage-final.json
+          flags: frontend-unit
+
+  frontend-e2e:
+    name: Frontend E2E Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+      
+      - name: Install dependencies
+        working-directory: tipsydot-demo
+        run: pnpm install --frozen-lockfile
+      
+      - name: Install Playwright browsers
+        working-directory: tipsydot-demo
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+      
+      - name: Build frontend
+        working-directory: tipsydot-demo
+        run: pnpm build
+      
+      - name: Run E2E tests
+        working-directory: tipsydot-demo
+        run: pnpm test:e2e --project=${{ matrix.browser }}
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: tipsydot-demo/playwright-report/
+          retention-days: 30
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      anvil:
+        image: ghcr.io/foundry-rs/foundry:latest
+        ports:
+          - 8545:8545
+        options: >-
+          --entrypoint anvil
+          --health-cmd "cast block-number"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+      
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      
+      - name: Install dependencies
+        working-directory: tipsydot-demo
+        run: |
+          forge install
+          pnpm install --frozen-lockfile
+      
+      - name: Deploy contracts to Anvil
+        working-directory: tipsydot-demo
+        run: |
+          forge script scripts/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast
+      
+      - name: Run integration tests
+        working-directory: tipsydot-demo
+        run: pnpm test:integration
+        env:
+          ANVIL_URL: http://localhost:8545
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Slither
+        uses: crytic/slither-action@v0.3.0
+        with:
+          target: tipsydot-demo/contracts
+          slither-args: '--json -'
+      
+      - name: Run npm audit
+        working-directory: tipsydot-demo
+        run: pnpm audit --audit-level=high
+      
+      - name: Run cargo audit
+        working-directory: tipsydot-demo/ink-contracts
+        run: |
+          cargo install cargo-audit
+          cargo audit
+
+  build-docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./tipsydot-demo
+          push: false
+          tags: tipsydot:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
