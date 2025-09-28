@@ -219,11 +219,11 @@ graph LR
 
 | Component | Status | Description | ETA |
 |-----------|--------|-------------|-----|
-| 🔥 **Revive Node** | 🚧 Building | Native PolkaVM execution engine | ~5 min |
-| 🛠️ **Pop CLI** | 🚧 Installing | Development automation tools | ~3 min |
+| 🔥 **Frontier Node** | ✅ **Running** | Native Substrate EVM | ✅ Live |
+| 🛠️ **Smart Contracts** | ✅ **Deployed** | MockUSDC & USDCDonation | ✅ Tested |
 | 🏦 **AssetHub Fork** | ✅ **Ready** | Real USDC via Chopsticks | ✅ Live |
-| 📜 **Smart Contracts** | ✅ **Ready** | SimpleTipping.sol deployed | ✅ Tested |
-| 🎨 **Frontend Stack** | ✅ **Ready** | React + TypeScript UI | ✅ Ready |
+| 📜 **Frontend Stack** | ✅ **Running** | React + TypeScript UI | ✅ Connected |
+| 🎨 **Donation Flow** | ✅ **Working** | Complete end-to-end flow | ✅ Verified |
 
 ### Network Endpoints
 

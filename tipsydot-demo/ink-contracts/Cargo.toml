@@ -1,0 +1,36 @@
+[workspace]
+members = [
+    "psp22_usdc",
+    "tipping",
+    "cross_chain",
+    "simple_test",
+    "tipping_compatible",
+]
+resolver = "2"
+
+[workspace.dependencies]
+# Ink! v5 - stable version with Solidity compatibility features
+ink = { version = "5.0", default-features = false }
+scale = { package = "parity-scale-codec", version = "3.6", default-features = false, features = ["derive"] }
+scale-info = { version = "2.11", default-features = false, features = ["derive"] }
+
+# For Solidity ABI compatibility with pallet-revive
+ethabi = { version = "18.0", default-features = false }
+primitive-types = { version = "0.12", default-features = false }
+hex = { version = "0.4", default-features = false }
+
+# OpenBrush for PSP22 and other standards
+openbrush = { version = "4.0.0-beta", default-features = false }
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+strip = true
+overflow-checks = true
+
+[profile.dev]
+overflow-checks = true
+panic = "abort"

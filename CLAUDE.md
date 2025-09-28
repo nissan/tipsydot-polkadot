@@ -4,124 +4,133 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-TipsyDot is a cross-chain DeFi tipping platform built for the Polkadot Blockchain Academy Hackathon. It demonstrates Polkadot's full technology stack including XCM v4 cross-chain messaging, custom assets, NFT rewards, and EVM compatibility via the Revive pallet.
+TipsyDot is a cross-chain DeFi tipping platform demonstrating Polkadot's technology stack including XCM v4, custom assets, NFT rewards, and EVM compatibility via both Frontier and Revive pallets.
 
 ## Development Commands
 
-### Setup & Installation
+### Core Development
 ```bash
-# Install dependencies (using pnpm)
-pnpm install
+# Install dependencies
+cd tipsydot-demo && pnpm install
 
-# Build smart contracts (requires Foundry)
-forge build
+# Start Chopsticks fork with real USDC (Terminal 1)
+pnpm chain:chopsticks:paseo   # Fork Paseo AssetHub (USDC ID: 1337)
+# OR
+pnpm chain:chopsticks:polkadot # Fork Polkadot AssetHub
+
+# Start local EVM chain (Terminal 2)
+pnpm chain:anvil  # Anvil on port 8545, chain ID 420420421
+
+# Deploy contracts (Terminal 3)
+node scripts/deploy-tipping.mjs    # SimpleTipping & MockUSDC
+node scripts/deploy-to-frontier.mjs # Deploy to Frontier node
+
+# Start frontend (Terminal 4)
+pnpm dev  # Next.js on http://localhost:3000
 
 # Run tests
-forge test
-forge test -vvv  # verbose output
-forge test --gas-report  # with gas reporting
+node scripts/test-tipping.mjs
+node scripts/test-donation-flow.mjs
 ```
 
-### Development Workflow
+### Infrastructure Management
 ```bash
-# Start local blockchain (Terminal 1)
-anvil --port 8545 --chain-id 420420421
+# Start complete Polkadot stack
+./scripts/start-polkadot-stack.sh     # Dev stack (Chopsticks + Anvil)
+./scripts/start-polkadot-native.sh    # Native stack (Revive/Frontier)
+./scripts/start-dev-with-paseo.sh     # Production-like setup
 
-# Deploy contracts (Terminal 2)
-./scripts/deploy-v4.sh    # Core TipsyDot contracts
-./scripts/deploy-usdp.sh  # USDP stablecoin system
-./scripts/deploy-nft.sh   # NFT reward contracts
-./scripts/deploy-faucet.sh # Faucet for test tokens
+# Stop all infrastructure
+pnpm infra:stop  # Kill all background processes
+pnpm demo:clean  # Clean data and rebuild
 
-# Start frontend (Terminal 3)
-pnpm dev  # Runs on http://localhost:5173
-
-# Linting and type checking
-pnpm lint
-pnpm build  # TypeScript build and type check
+# Monitor builds
+./scripts/monitor-builds.sh  # Check omninode/passethub build progress
 ```
 
-### Chopsticks Fork Testing (Recommended)
+### Contract Compilation
 ```bash
-# Fork Paseo AssetHub (has real USDC with Asset ID 1337)
-pnpm chopsticks:paseo
-
-# Or fork Polkadot AssetHub
-pnpm chopsticks:polkadot
-
-# Mint USDC to test accounts
-node scripts/mint-usdc-chopsticks.js
+# Compile Solidity contracts
+npx hardhat compile         # Standard compilation
+node scripts/compile.mjs    # With deployment artifacts
+npx solc contracts/USDCDonation.sol --bin --abi  # Direct solc
 ```
 
-## Architecture Overview
+## Architecture Patterns
 
-### Smart Contract Architecture
+### Multi-Chain Infrastructure
+The project supports three deployment targets:
+1. **Anvil Local**: Fast development with mock USDC
+2. **Frontier Node**: EVM on Substrate with native pallets
+3. **Revive/PolkaVM**: Next-gen execution on PassetHub
 
-The project uses a modular contract system deployed on EVM-compatible parachains:
-
-1. **TipsyDotV4/V5** (`contracts/TipsyDotV4.sol`, `TipsyDotV5.sol`): Main tipping platform
-   - Parachain registration and verification
-   - Tip distribution with 0.1% protocol fee
-   - Campaign management and analytics
-
-2. **USDP Ecosystem** (`contracts/USDP.sol`, `USDPBridge.sol`, `USDPSwap.sol`): Custom stablecoin
-   - ERC20 with burn/mint for bridging
-   - XCM bridge for cross-chain transfers
-   - AMM pools using constant product formula (x*y=k)
-   - Role-based access control (MINTER, BRIDGE, PAUSER)
-
-3. **NFT Rewards** (`contracts/TipsyDotNFT.sol`): Dynamic collectibles
-   - Rarity tiers based on tip amounts
-   - On-chain metadata generation
-   - AssetHub integration (Asset ID: 69420)
-
-### Frontend Architecture
-
-React application with modern tooling:
-- **Vite** for build and dev server
-- **TypeScript** for type safety
-- **TailwindCSS v4** with @tailwindcss/vite plugin
-- **ShadCN UI** components in `src/components/ui/`
-- **Wagmi/Viem** for EVM interactions
-- **Polkadot API (PAPI)** for Substrate chains
-
-### Polkadot Integration
-
-- **PAPI Descriptors**: Generated types in `.papi/descriptors/`
-- **Reactive-dot**: Modern React hooks for Polkadot
-- **XCM v4**: Reserve transfer patterns for custom assets
-- **Multi-chain Support**: Paseo, AssetHub, PassetHub connections
-
-## Key Technical Patterns
-
-### XCM Asset Transfers
-All custom assets (USDC, USDP, NFTs) use **reserve transfers**, never teleports:
-- USDC (Asset ID: 31337 or 1337 on Paseo)
-- USDP (Asset ID: 42069)
-- TipCards NFT (Asset ID: 69420)
-
-### Sovereign Account Management
-Cross-chain transfers use sovereign accounts with burn/mint mechanism for supply management.
-
-### Contract Security
-- OpenZeppelin standards (Ownable, Pausable, ReentrancyGuard)
-- Role-based access control
-- Idempotent bridge transactions
-- Emergency pause functionality
-
-## Test Accounts (Anvil)
-
+### Contract Deployment Flow
 ```javascript
-const OWNER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";     // Account #0
-const TREASURY = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"; // Account #1
-const ALICE = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";    // Account #2
-const BOB = "0x90F79bf6EB2c4f870365E785982E1f101E93b906";      // Account #3
+// Deployment addresses are stored in deployment.json
+{
+  "contracts": {
+    "MockUSDC": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "SimpleTipping": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+  }
+}
 ```
 
-## Important Notes
+### Frontend Integration Points
+- **Wagmi Config**: `lib/wagmi-config.ts` - Chain configuration and ABIs
+- **PAPI Client**: `lib/papi-client.ts` - AssetHub monitoring and USDC tracking
+- **Contract Loading**: Automatic from `deployment.json` or environment variables
 
-- **Foundry Required**: Install with `curl -L https://foundry.paradigm.xyz | bash && foundryup`
-- **Asset IDs**: USDC varies by network (1337 on Paseo, different on mainnet)
-- **Chain ID**: Local Anvil uses 420420421
-- **Package Overrides**: Security patches for npm vulnerabilities in package.json
-- **Path Aliases**: `@/` maps to `src/` directory in TypeScript/Vite
+### Environment Configuration
+```bash
+# Key environment variables (see .env.example)
+NEXT_PUBLIC_ASSETHUB_WS=ws://127.0.0.1:8000
+NEXT_PUBLIC_PASSETHUB_EVM_RPC=http://127.0.0.1:8545
+NEXT_PUBLIC_CHAIN_ID=420420421
+NEXT_PUBLIC_USDC_ASSET_ID=1337
+NEXT_PUBLIC_NETWORK_NAME="Native Polkadot EVM"
+```
+
+## Cross-Chain Asset Management
+
+### XCM Reserve Transfer Pattern
+All assets use reserve transfers with AssetHub as the reserve chain:
+- **USDC**: Asset ID 1337 (Paseo) or 31337 (custom)
+- **Reserve Location**: AssetHub parachain 1000
+- **Transfer Type**: Always reserve, never teleport
+
+### Precompile Addresses (Frontier)
+```solidity
+address constant ASSET_PRECOMPILE = 0x0800...;  // Access substrate assets
+address constant XCM_PRECOMPILE = 0x0809...;    // Execute XCM messages
+```
+
+## Testing & Verification
+
+### Quick Test Flow
+```bash
+# 1. Ensure infrastructure is running
+pnpm chain:chopsticks:paseo & pnpm chain:anvil
+
+# 2. Deploy and test
+node scripts/deploy-tipping.mjs
+node scripts/test-tipping.mjs
+
+# 3. Check deployed contracts
+cat deployment.json
+```
+
+### Builder Configuration
+Pre-configured builders for testing donations:
+- **Alice (Moonbeam)**: Focus on EVM smart contracts
+- **Bob (Astar)**: Multi-VM platform support
+- **Charlie (Acala)**: Native DeFi primitives
+
+## Important Technical Details
+
+- **Package Manager**: Always use `pnpm` (not npm/yarn)
+- **Node Version**: Requires Node.js 18+ for ES modules
+- **Contract Verification**: Deployment scripts auto-verify on explorers when available
+- **Gas Settings**: Anvil uses 30 gwei base fee, adjust in hardhat.config.mjs
+- **Network Switching**: Frontend auto-detects network from environment
+- **Build Artifacts**: Smart contract artifacts in `tipsydot-demo/artifacts/`
+- **Chopsticks Data**: SQLite databases stored as `chopsticks-*.sqlite`

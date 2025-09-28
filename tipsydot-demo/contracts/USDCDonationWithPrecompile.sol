@@ -2,14 +2,15 @@
 pragma solidity ^0.8.20;
 
 /**
- * @title USDCDonation
- * @dev Simple contract for donating USDC to underfunded parachain builders
- * Demonstrates EVM to Substrate cross-chain transfers via XCM
+ * @title USDCDonationWithPrecompile
+ * @dev Contract for donating USDC to underfunded parachain builders
+ * Uses AssetHub USDC via precompile (no MockUSDC needed!)
  */
-contract USDCDonation {
+contract USDCDonationWithPrecompile {
     // AssetHub USDC precompile address (Asset ID 1337 on Paseo)
     // Format: 0x0800 (precompile prefix) + 0539 (hex of 1337)
-    address constant USDC = 0x0800000000000000000000000000000000000539;
+    // This precompile allows direct access to real USDC from forked AssetHub
+    address constant USDC_PRECOMPILE = 0x0800000000000000000000000000000000000539;
     
     struct ParachainBuilder {
         string name;
@@ -51,6 +52,7 @@ contract USDCDonation {
     
     /**
      * @dev Donate USDC to a parachain builder
+     * Uses the precompile to access real USDC from forked AssetHub
      * @param builderId The ID of the builder to donate to
      * @param amount The amount of USDC to donate (with 6 decimals)
      */
@@ -59,9 +61,9 @@ contract USDCDonation {
         require(amount >= 1e6, "Minimum donation is 1 USDC");
         require(amount <= 100000e6, "Maximum donation is 100,000 USDC");
         
-        // For demo: Transfer USDC from donor to contract
-        // In production, this would trigger actual XCM transfer
-        bool success = IERC20(USDC).transferFrom(msg.sender, address(this), amount);
+        // Use the precompile to transfer real USDC from AssetHub
+        // The precompile provides ERC20-like interface to Substrate assets
+        bool success = IERC20(USDC_PRECOMPILE).transferFrom(msg.sender, address(this), amount);
         require(success, "USDC transfer failed");
         
         // Update builder stats
@@ -76,7 +78,7 @@ contract USDCDonation {
             block.timestamp
         );
         
-        // In production: Trigger XCM to transfer USDC to substrate address
+        // In production: Could trigger XCM to transfer USDC to builder's substrate address
         // _initiateXCMTransfer(builders[builderId].substrateAddress, amount);
     }
     
@@ -112,6 +114,13 @@ contract USDCDonation {
     }
     
     /**
+     * @dev Check USDC balance using precompile
+     */
+    function getUSDCBalance(address account) external view returns (uint256) {
+        return IERC20(USDC_PRECOMPILE).balanceOf(account);
+    }
+    
+    /**
      * @dev Internal function to add a builder
      */
     function _addBuilder(
@@ -130,9 +139,10 @@ contract USDCDonation {
     }
 }
 
-// Minimal ERC20 interface for USDC
+// Minimal ERC20 interface for the precompile
 interface IERC20 {
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
     function approve(address spender, uint256 amount) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
+    function transfer(address to, uint256 amount) external returns (bool);
 }

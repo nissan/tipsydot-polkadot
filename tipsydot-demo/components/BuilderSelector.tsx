@@ -50,7 +50,7 @@ const builders: Builder[] = [
 ];
 
 interface BuilderSelectorProps {
-  selectedBuilder: number;
+  selectedBuilder: number | null;
   onSelectBuilder: (builderId: number) => void;
 }
 
@@ -62,7 +62,7 @@ export default function BuilderSelector({
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Select a Builder to Support</h3>
       <RadioGroup
-        value={selectedBuilder.toString()}
+        value={selectedBuilder?.toString() ?? ""}
         onValueChange={(value) => onSelectBuilder(Number(value))}
       >
         {builders.map((builder) => (

@@ -1,10 +1,14 @@
 import { createConfig, http } from "wagmi";
 import { createClient, defineChain } from "viem";
 
-// Native Polkadot EVM chain configuration (replacing Anvil)
+// Native Polkadot EVM chain configuration
+const evmRpcUrl = process.env.NEXT_PUBLIC_PASSETHUB_EVM_RPC || "http://127.0.0.1:8545";
+const chainId = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || "420420421");
+const chainName = process.env.NEXT_PUBLIC_NETWORK_NAME || "Native Polkadot EVM";
+
 export const nativePolkadotEVM = defineChain({
-  id: 420420421,
-  name: "Native Polkadot EVM",
+  id: chainId,
+  name: chainName,
   nativeCurrency: {
     name: "Ether",
     symbol: "ETH",
@@ -12,14 +16,14 @@ export const nativePolkadotEVM = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ["http://127.0.0.1:8545"],
+      http: [evmRpcUrl],
     },
     public: {
-      http: ["http://127.0.0.1:8545"],
+      http: [evmRpcUrl],
     },
   },
   blockExplorers: {
-    default: { name: "Local", url: "http://localhost:8545" },
+    default: { name: chainName, url: evmRpcUrl },
   },
   testnet: true,
 });
@@ -31,7 +35,7 @@ export const anvilLocal = nativePolkadotEVM;
 export const config = createConfig({
   chains: [nativePolkadotEVM],
   transports: {
-    [nativePolkadotEVM.id]: http("http://127.0.0.1:8545"),
+    [nativePolkadotEVM.id]: http(evmRpcUrl),
   },
 });
 

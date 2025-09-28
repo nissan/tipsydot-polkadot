@@ -1,8 +1,8 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 
-// AssetHub fork configuration
-const ASSETHUB_WS = "ws://127.0.0.1:8000";
-const USDC_ASSET_ID = 1337; // USDC on Paseo AssetHub
+// AssetHub configuration - uses environment variables or fallback to local
+const ASSETHUB_WS = process.env.NEXT_PUBLIC_ASSETHUB_WS || "ws://127.0.0.1:8000";
+const USDC_ASSET_ID = parseInt(process.env.NEXT_PUBLIC_USDC_ASSET_ID || "1337");
 
 export interface ChainInfo {
   chain: string;

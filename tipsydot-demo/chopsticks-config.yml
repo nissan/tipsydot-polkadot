@@ -1,0 +1,70 @@
+# Chopsticks configuration for forking Paseo AssetHub
+# This gives us access to real USDC assets and liquidity pools
+
+endpoint: wss://paseo-asset-hub-rpc.dwellir.com
+port: 8000
+mock-signature-host: true
+db: ./chopsticks-db.sqlite
+
+# Import storage from AssetHub
+import-storage:
+  System:
+    Account:
+      - - "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" # Alice
+      - - "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" # Bob
+  
+  # Import Assets pallet storage to get USDC
+  Assets:
+    Asset:
+      - - 1337 # USDC Asset ID
+    Metadata:
+      - - 1337
+  
+  # Import AssetConversion pallet if it exists
+  AssetConversion: {}
+
+# Override storage for testing
+override:
+  # Give test accounts native balance (PAS)
+  Balances:
+    TotalIssuance: "1000000000000000000"
+    Account:
+      - - "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" # Alice
+        - providers: 1
+          data:
+            free: "1000000000000000" # 1000 PAS
+      - - "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" # Bob  
+        - providers: 1
+          data:
+            free: "1000000000000000" # 1000 PAS
+  
+  # Give test accounts USDC
+  Assets:
+    Account:
+      - - 1337 # USDC Asset ID
+        - "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" # Alice
+        - balance: "10000000000" # 10,000 USDC (6 decimals)
+      - - 1337
+        - "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" # Bob
+        - balance: "10000000000" # 10,000 USDC
+  
+  # Set up AssetConversion liquidity pool for PAS/USDC
+  AssetConversion:
+    Pools:
+      # Create PAS/USDC pool
+      - - 
+        - NativeAsset: {}  # PAS
+        - ForeignAsset: 1337  # USDC
+        - 
+          lpToken: 1000001  # LP token ID
+          poolAssetId: 
+            - NativeAsset: {}
+            - ForeignAsset: 1337
+  
+  # Enable sudo for minting
+  Sudo:
+    Key: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" # Alice has sudo
+
+# Allow localhost connections
+allow-unregistered-calls: true
+runtime-log-level: 5

@@ -1,0 +1,7 @@
+{
+  "mockUSDC": "0xc01ee7f10ea4af4673cfff62710e1d7792aba8f3",
+  "usdcDonation": "0x970951a12f975e6762482aca81e57d5a2a4e73f4",
+  "network": "frontier",
+  "chainId": 42,
+  "deployedAt": "2025-09-10T00:38:42.574Z"
+}

@@ -1,0 +1,32 @@
+[package]
+name = "tipping"
+version = "1.0.0"
+authors = ["TipsyDot Team"]
+edition = "2021"
+
+[dependencies]
+ink = { workspace = true }
+scale = { workspace = true }
+scale-info = { workspace = true }
+openbrush = { workspace = true, features = ["ownable", "pausable"] }
+
+# For PSP22 trait
+psp22_usdc = { path = "../psp22_usdc", default-features = false, features = ["ink-as-dependency"] }
+
+[dev-dependencies]
+ink_e2e = { version = "5.0" }
+
+[lib]
+path = "lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "ink/std",
+    "scale/std",
+    "scale-info/std",
+    "openbrush/std",
+    "psp22_usdc/std",
+]
+ink-as-dependency = []
+e2e-tests = []

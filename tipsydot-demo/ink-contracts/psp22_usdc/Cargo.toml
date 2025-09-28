@@ -1,0 +1,28 @@
+[package]
+name = "psp22_usdc"
+version = "1.0.0"
+authors = ["TipsyDot Team"]
+edition = "2021"
+
+[dependencies]
+ink = { workspace = true }
+scale = { workspace = true }
+scale-info = { workspace = true }
+openbrush = { workspace = true, features = ["psp22"] }
+
+[dev-dependencies]
+ink_e2e = { version = "5.0" }
+
+[lib]
+path = "lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "ink/std",
+    "scale/std",
+    "scale-info/std",
+    "openbrush/std",
+]
+ink-as-dependency = []
+e2e-tests = []

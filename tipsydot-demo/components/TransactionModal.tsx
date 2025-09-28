@@ -44,7 +44,7 @@ export default function TransactionModal({
   isOpen,
   onClose,
 }: TransactionModalProps) {
-  const [selectedBuilder, setSelectedBuilder] = useState(0);
+  const [selectedBuilder, setSelectedBuilder] = useState<number | null>(null);
   const [selectedAmount, setSelectedAmount] = useState(10);
   const [step, setStep] = useState<
     "connect" | "select" | "approve" | "donate" | "complete"
@@ -85,6 +85,9 @@ export default function TransactionModal({
   useEffect(() => {
     if (isConnected && step === "connect") {
       setStep("select");
+    } else if (!isConnected && step !== "connect") {
+      // Reset to connect step when wallet is disconnected
+      setStep("connect");
     }
   }, [isConnected, step]);
 
@@ -147,7 +150,7 @@ export default function TransactionModal({
   };
 
   const handleDonate = async () => {
-    if (!contracts) return;
+    if (!contracts || selectedBuilder === null) return;
 
     setStep("donate");
 
@@ -171,7 +174,7 @@ export default function TransactionModal({
   const handleClose = () => {
     if (step === "complete") {
       setStep("connect");
-      setSelectedBuilder(0);
+      setSelectedBuilder(null);
       setSelectedAmount(10);
     }
     onClose();
@@ -268,12 +271,21 @@ export default function TransactionModal({
               </div>
 
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => disconnect()}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    disconnect();
+                    setStep("connect");
+                    setSelectedBuilder(null);
+                    setSelectedAmount(10);
+                  }}
+                >
                   Disconnect
                 </Button>
                 <Button
                   onClick={handleApprove}
                   className="bg-red-600 hover:bg-red-700"
+                  disabled={!selectedBuilder || !selectedAmount}
                 >
                   Continue to Approve
                 </Button>
@@ -292,7 +304,7 @@ export default function TransactionModal({
               <p className="text-muted-foreground">
                 {step === "approve"
                   ? "Please approve the transaction in your wallet"
-                  : `Donating ${selectedAmount} USDC to builder #${selectedBuilder + 1}`}
+                  : `Donating ${selectedAmount} USDC to builder #${selectedBuilder !== null ? selectedBuilder + 1 : ''}`}
               </p>
             </div>
           )}
@@ -302,12 +314,22 @@ export default function TransactionModal({
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-2">Donation Successful!</h3>
               <p className="text-muted-foreground mb-4">
-                You've successfully donated {selectedAmount} USDC
+                You&apos;ve successfully donated {selectedAmount} USDC
               </p>
               <Badge variant="outline" className="mb-6">
                 Transaction Hash: {donateHash?.slice(0, 10)}...
               </Badge>
-              <div className="flex justify-center">
+              <div className="flex justify-center gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setStep("select");
+                    setSelectedBuilder(0);
+                    setSelectedAmount(10);
+                  }}
+                >
+                  Donate Again
+                </Button>
                 <Button
                   onClick={handleClose}
                   className="bg-red-600 hover:bg-red-700"

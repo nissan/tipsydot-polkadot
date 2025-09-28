@@ -51,4 +51,8 @@ out/
 # Cache directories
 .cache/
 .parcel-cache/
-.next/
+.next/# Binary files
+tipsydot-demo/bin/
+*.bin
+moonbeam/
+polkadot-sdk/
